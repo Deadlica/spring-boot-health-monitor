@@ -15,7 +15,7 @@ public class Controller {
     @GetMapping("/monitor/cpu-overload")
     public String cpuOverload() {
         try {
-            while(true) {
+            for(int i = 0; i < 10; i++) {
                 Runnable runner = () -> {    while(true) {}    };
                 new Thread(runner).start();
                 Thread.sleep(5000);
