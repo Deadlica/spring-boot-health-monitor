@@ -1,6 +1,7 @@
 package com.samuel.healthmonitor.rest;
 
 import com.samuel.healthmonitor.resources.CPU;
+import com.samuel.healthmonitor.resources.Disk;
 import com.samuel.healthmonitor.resources.RAM;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,19 +26,25 @@ public class LoadController {
 
     @GetMapping("/load/ram")
     public String loadRAM() {
-        Thread t = new Thread(RAM::load);
-        t.start();
-        return "Loaded the RAM successfully!";
+        return RAM.load();
     }
 
     @GetMapping("/load/disk")
     public String loadDisk() throws IOException {
-        String filename = "load_test.txt";
-        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
-        for(int i = 0; i < 1000000; i++) {
-            writer.write("Load test\n");
-        }
-        writer.close();
+        Thread t1 = new Thread(() -> {
+            try {
+                Disk.readLoad();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            try {
+                Disk.writeLoad();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return "Loaded the disk successfully!";
     }
 
