@@ -16,11 +16,11 @@ import java.util.Random;
 @RestController
 public class LoadController {
     @GetMapping("/load/cpu")
-    public String loadCPU() { //VM has 2 cores, hence the 2 threads.
-        Thread t1 = new Thread(CPU::load);
-        Thread t2 = new Thread(CPU::load);
-        t1.start();
-        t2.start();
+    public String loadCPU() {
+        for(int i = 0; i < CPU.cores(); i++) {
+            Thread thread = new Thread(CPU::load);
+            thread.start();
+        }
         return "Loaded the CPU successfully!";
     }
 
@@ -33,18 +33,20 @@ public class LoadController {
     public String loadDisk() throws IOException {
         Thread t1 = new Thread(() -> {
             try {
-                Disk.readLoad();
+                Disk.writeLoad();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
         Thread t2 = new Thread(() -> {
             try {
-                Disk.writeLoad();
+                Disk.readLoad();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
+        t1.start();
+        t2.start();
         return "Loaded the disk successfully!";
     }
 
