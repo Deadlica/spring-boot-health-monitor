@@ -2,7 +2,9 @@ package com.samuel.healthmonitor.rest;
 
 import com.samuel.healthmonitor.resources.CPU;
 import com.samuel.healthmonitor.resources.Disk;
+import com.samuel.healthmonitor.resources.Network;
 import com.samuel.healthmonitor.resources.RAM;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,9 +53,12 @@ public class LoadController {
     }
 
     @GetMapping("load/network")
-    public String loadNetwork() throws IOException {
-        InetAddress.getByName("www.google.com").isReachable(5000);
-        return "Loaded the network successfully";
+    public ResponseEntity<String> loadNetwork() throws IOException {
+        for(int i = 0; i < CPU.cores(); i++) {
+            Thread t = new Thread(Network::load);
+            t.start();
+        }
+        return ResponseEntity.ok("Loading the network!");
     }
 
     @GetMapping("load/all")
@@ -67,7 +72,7 @@ public class LoadController {
                 resources.add(new Thread(loadCPU()));
                 resources.add(new Thread(loadRAM()));
                 resources.add(new Thread(loadDisk()));
-                resources.add(new Thread(loadNetwork()));
+                //resources.add(new Thread(loadNetwork()));
                 resources.forEach((thread -> {
                     thread.start();
                 }));
@@ -81,5 +86,15 @@ public class LoadController {
                 }));*/
         }
         return "Loaded all hardware successfully";
+    }
+
+    @GetMapping("web-shop")
+    public String store() {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return "Welcome to the webpage";
     }
 }
