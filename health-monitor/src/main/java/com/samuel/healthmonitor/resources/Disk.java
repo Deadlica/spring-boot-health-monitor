@@ -1,9 +1,13 @@
 package com.samuel.healthmonitor.resources;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Random;
 
 public class Disk {
     public static void readLoad() throws IOException {
@@ -28,4 +32,26 @@ public class Disk {
     }
 
     private static String fileName = "load_test.txt";
+
+    public static void load() {
+        while(true) {
+            String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 2048 -n 1000 -r 100 -u root"};
+            try {
+                ProcessBuilder pb = new ProcessBuilder(command);
+                pb.redirectErrorStream(true);
+                pb.directory(new File(System.getProperty("user.home")));
+                Process process = pb.start();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+                process.waitFor();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 }

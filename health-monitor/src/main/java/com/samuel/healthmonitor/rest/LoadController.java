@@ -32,28 +32,14 @@ public class LoadController {
     }
 
     @GetMapping("/load/disk")
-    public String loadDisk() throws IOException {
-        Thread t1 = new Thread(() -> {
-            try {
-                Disk.writeLoad();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        Thread t2 = new Thread(() -> {
-            try {
-                Disk.readLoad();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        t1.start();
-        t2.start();
+    public String loadDisk() {
+        Thread t = new Thread(Disk::load);
+        t.start();
         return "Loaded the disk successfully!";
     }
 
     @GetMapping("load/network")
-    public ResponseEntity<String> loadNetwork() throws IOException {
+    public ResponseEntity<String> loadNetwork() {
         for(int i = 0; i < CPU.cores(); i++) {
             Thread t = new Thread(Network::load);
             t.start();

@@ -2,3 +2,4 @@ load_test.txt
 prometheus/
 grafana/
 node_exporter/
+__pycache__/

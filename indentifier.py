@@ -24,5 +24,6 @@ if(__name__ == "__main__"):
     resources = list()
     resources.append(Resource("CPU"))
     resources.append(Resource("RAM"))
+    resources.append(Resource("Disk"))
 
     use(resources)
