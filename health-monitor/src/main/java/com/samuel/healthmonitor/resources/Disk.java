@@ -35,19 +35,19 @@ public class Disk {
 
     public static void load() {
         while(true) {
-            String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 2048 -n 1000 -r 100 -u root"};
+            String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 4096 -n 1000 -r 100 -u root"};
             try {
                 ProcessBuilder pb = new ProcessBuilder(command);
                 pb.redirectErrorStream(true);
                 pb.directory(new File(System.getProperty("user.home")));
-                Process process = pb.start();
+                Process bonnie = pb.start();
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(bonnie.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                 }
-                process.waitFor();
+                bonnie.waitFor();
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }

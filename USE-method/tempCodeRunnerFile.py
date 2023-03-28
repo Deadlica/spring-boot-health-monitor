@@ -1,0 +1,2 @@
+
+    resources.append(RAM("RAM"))

@@ -77,7 +77,7 @@ public class LoadController {
     @GetMapping("web-shop")
     public String store() {
         try {
-            Thread.sleep(10000);
+            Thread.sleep(30000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
