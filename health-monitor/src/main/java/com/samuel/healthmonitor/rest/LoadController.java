@@ -28,7 +28,7 @@ public class LoadController {
 
     @GetMapping("/load/ram")
     public String loadRAM() {
-        return RAM.allocateMemory();
+        return RAM.load();
     }
 
     @GetMapping("/load/disk")
@@ -48,29 +48,11 @@ public class LoadController {
     }
 
     @GetMapping("load/all")
-    public String loadAll() throws IOException, InterruptedException, RuntimeException {
-        /*loadCPU();
-        loadRAM();
+    public String loadAll() {
+        loadCPU();
         loadDisk();
-        loadNetwork();*/
-        for(int i = 0; i < 5; i++) {
-                ArrayList<Thread> resources = new ArrayList<Thread>();
-                resources.add(new Thread(loadCPU()));
-                resources.add(new Thread(loadRAM()));
-                resources.add(new Thread(loadDisk()));
-                //resources.add(new Thread(loadNetwork()));
-                resources.forEach((thread -> {
-                    thread.start();
-                }));
-
-                /*resources.forEach((thread -> {
-                    try {
-                        thread.join();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }));*/
-        }
+        loadNetwork();
+        loadRAM();
         return "Loaded all hardware successfully";
     }
 

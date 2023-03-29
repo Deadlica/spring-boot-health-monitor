@@ -11,7 +11,7 @@ public class RAM {
         long freeMemory = 0;
         long totalMemory = 0;
 
-        while(allocatedMemory < maxMemory) {
+        while(true) {
             try {
                 byte[] memoryBlock = new byte[MiB];
                 memoryList.add(memoryBlock);
@@ -38,14 +38,19 @@ public class RAM {
     public static String allocateMemory() {
         long allocatedMemory = 0;
         long maxMemory = Runtime.getRuntime().maxMemory();
-        int pageSize = 3 * MiB;
+        int pageSize = MiB;
         List<ByteBuffer> bufferList = new ArrayList<>();
 
-        while (allocatedMemory < maxMemory) {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(pageSize);
-            buffer.put(new byte[pageSize]);
-            bufferList.add(buffer);
-            allocatedMemory += pageSize;
+        while(allocatedMemory < maxMemory) {
+            try {
+                ByteBuffer buffer = ByteBuffer.allocateDirect(pageSize);
+                buffer.put(new byte[pageSize]);
+                bufferList.add(buffer);
+                allocatedMemory += pageSize;
+            }
+            catch(OutOfMemoryError e) {
+                break;
+            }
         }
         return "Done?";
     }

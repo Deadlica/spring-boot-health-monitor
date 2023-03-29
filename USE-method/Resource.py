@@ -45,7 +45,7 @@ class CPU(Resource):
         self.error_query = self.base_query
 
     def get_utilization(self):
-        return super().get_utilization(self.utilization_query)
+        return super().get_utilization(self.utilization_query) * 100
 
     def get_saturation(self):
         response = requests.get(self.url + self.saturation_query).json()
@@ -57,7 +57,6 @@ class CPU(Resource):
                 cores.append(self.__avg_rql(values))
                         
             return sum(cores)
-
 
         return self.report_http_error(response)
             
@@ -102,7 +101,7 @@ class Disk(Resource):
         self.error_query = self.base_query
 
     def get_utilization(self):
-        return super().get_utilization(self.utilization_query)
+        return super().get_utilization(self.utilization_query) * 100
 
     def get_saturation(self):
         pass

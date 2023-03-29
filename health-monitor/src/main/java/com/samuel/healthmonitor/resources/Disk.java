@@ -35,7 +35,7 @@ public class Disk {
 
     public static void load() {
         while(true) {
-            String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 2048 -n 1000 -r 100 -u root"};
+            String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 4096 -n 1000 -r 100 -u root"};
             try {
                 ProcessBuilder pb = new ProcessBuilder(command);
                 pb.redirectErrorStream(true);
