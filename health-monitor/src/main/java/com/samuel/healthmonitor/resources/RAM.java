@@ -1,5 +1,6 @@
 package com.samuel.healthmonitor.resources;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ public class RAM {
         long freeMemory = 0;
         long totalMemory = 0;
 
-        while (allocatedMemory < maxMemory) {
+        while(allocatedMemory < maxMemory) {
             try {
                 byte[] memoryBlock = new byte[MiB];
                 memoryList.add(memoryBlock);
@@ -18,7 +19,7 @@ public class RAM {
                 freeMemory = Runtime.getRuntime().freeMemory();
                 totalMemory = Runtime.getRuntime().totalMemory();
             }
-            catch (OutOfMemoryError e) {
+            catch(OutOfMemoryError e) {
                 break;
             }
         }
@@ -32,6 +33,21 @@ public class RAM {
                         freeMemory / MiB,
                         totalMemory / MiB,
                         maxMemory / MiB);
+    }
+
+    public static String allocateMemory() {
+        long allocatedMemory = 0;
+        long maxMemory = Runtime.getRuntime().maxMemory();
+        int pageSize = 3 * MiB;
+        List<ByteBuffer> bufferList = new ArrayList<>();
+
+        while (allocatedMemory < maxMemory) {
+            ByteBuffer buffer = ByteBuffer.allocateDirect(pageSize);
+            buffer.put(new byte[pageSize]);
+            bufferList.add(buffer);
+            allocatedMemory += pageSize;
+        }
+        return "Done?";
     }
 
     private static List<byte[]> memoryList = new ArrayList<>();

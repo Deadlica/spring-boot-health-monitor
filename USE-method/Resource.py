@@ -56,10 +56,7 @@ class CPU(Resource):
                 values = core["values"]
                 cores.append(self.__avg_rql(values))
                         
-                
-            print(cores)
-            print(statistics.mean(cores) * 6)
-            return statistics.mean(cores) * 6
+            return sum(cores)
 
 
         return self.report_http_error(response)
@@ -89,6 +86,8 @@ class RAM(Resource):
         return super().get_utilization(self.utilization_query)
 
     def get_saturation(self):
+        # High Swap In(SI), Swap Out(SO) are indicator of RAM saturation
+        # vmstat 1 (column SI, SO)
         pass
 
     def get_errors(self):
@@ -96,9 +95,9 @@ class RAM(Resource):
 
 
 class Disk(Resource):
-    def __init__(self, name, disk_name):
+    def __init__(self, name, disk_names):
         super().__init__(name)
-        self.utilization_query = self.base_query.format("irate(node_disk_io_time_seconds_total{instance='localhost:9100',job='node',device='" + disk_name + "'} [1m0s])", self.start_time, self.end_time, self.step)
+        self.utilization_query = self.base_query.format("irate(node_disk_io_time_seconds_total{instance='localhost:9100',job='node',device=~'" + disk_names + "'} [1m0s])", self.start_time, self.end_time, self.step)
         self.saturation_query = self.base_query
         self.error_query = self.base_query
 

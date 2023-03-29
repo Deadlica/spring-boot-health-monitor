@@ -28,7 +28,7 @@ public class LoadController {
 
     @GetMapping("/load/ram")
     public String loadRAM() {
-        return RAM.load();
+        return RAM.allocateMemory();
     }
 
     @GetMapping("/load/disk")
