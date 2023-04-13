@@ -1,9 +1,6 @@
 package com.samuel.healthmonitor.rest;
 
-import com.samuel.healthmonitor.resources.CPU;
-import com.samuel.healthmonitor.resources.Disk;
-import com.samuel.healthmonitor.resources.Network;
-import com.samuel.healthmonitor.resources.RAM;
+import com.samuel.healthmonitor.resources.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

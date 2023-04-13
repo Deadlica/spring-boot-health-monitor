@@ -15,7 +15,16 @@ class Resource:
         self.base_query = "query_range?query={}&start={}&end={}&step={}"
 
     def get_utilization(self, query):
-        response = requests.get(self.url + query).json()
+        return self.compute_average(self.url, query)
+
+    def get_saturation(self, query):
+        return self.compute_average(self.url, query)
+
+    def get_errors(self):
+        print("errors")
+
+    def compute_average(self, url, query):
+        response = requests.get(url + query).json()
         if(response["status"] == "success"):
             data_pairs = response["data"]["result"][0]["values"] #Will crash on CPU if spring boot application isn't running
             data = list()
@@ -27,20 +36,15 @@ class Resource:
 
         return self.report_http_error(response)
 
-    def get_saturation(self):
-        print("Saturation")
-
-    def get_errors(self):
-        print("errors")
-
     def report_http_error(self, response):
-        return "status: " + response["status"] + "\nerrorType: " + response["errorType"] + "\nerror: " + response["error"] + "\n"
+        print("status: " + response["status"] + "\nerrorType: " + response["errorType"] + "\nerror: " + response["error"])
+        exit(-1)
 
 
 class CPU(Resource):
     def __init__(self, name):
         super().__init__(name)
-        self.utilization_query = self.base_query.format("process_cpu_usage", self.start_time, self.end_time, self.step)
+        self.utilization_query = self.base_query.format("system_cpu_usage", self.start_time, self.end_time, self.step)
         self.saturation_query = self.base_query.format("node_schedstat_waiting_seconds_total", self.start_time, self.end_time, self.step)
         self.error_query = self.base_query
 
@@ -78,16 +82,14 @@ class RAM(Resource):
     def __init__(self, name):
         super().__init__(name)
         self.utilization_query = self.base_query.format("100 - ((node_memory_MemAvailable_bytes{instance='localhost:9100',job='node'} * 100) / node_memory_MemTotal_bytes{instance='localhost:9100',job='node'})", self.start_time, self.end_time, self.step)
-        self.saturation_query = self.base_query
+        self.saturation_query = self.base_query.format("sum(rate(node_vmstat_pswpin{job%3D'node'}[1m])+%2Brate(node_vmstat_pswpout{job%3D'node'}[1m]))", self.start_time, self.end_time, self.step)
         self.error_query = self.base_query
 
     def get_utilization(self):
         return super().get_utilization(self.utilization_query)
 
-    def get_saturation(self):
-        # High Swap In(SI), Swap Out(SO) are indicator of RAM saturation
-        # vmstat 1 (column SI, SO)
-        pass
+    def get_saturation(self): #Number of swap in/out
+        return super().get_saturation(self.saturation_query)
 
     def get_errors(self):
         pass
@@ -97,11 +99,32 @@ class Disk(Resource):
     def __init__(self, name, disk_names):
         super().__init__(name)
         self.utilization_query = self.base_query.format("irate(node_disk_io_time_seconds_total{instance='localhost:9100',job='node',device=~'" + disk_names + "'} [1m0s])", self.start_time, self.end_time, self.step)
-        self.saturation_query = self.base_query
+        self.saturation_query = self.base_query.format("node_disk_io_now{device=~'" + disk_names + "', instance='localhost:9100', job='node'}", self.start_time, self.end_time, self.step)
         self.error_query = self.base_query
 
     def get_utilization(self):
         return super().get_utilization(self.utilization_query) * 100
+
+    def get_saturation(self):
+        return super().get_saturation(self.saturation_query)
+
+    def get_errors(self):
+        pass
+
+    
+class Network(Resource):
+    def __init__(self, name, network_names):
+        super().__init__(name)
+        self.upload_utilization_query = self.base_query.format("100 * rate(node_network_transmit_bytes_total{device=~'" + network_names + "'}[1m]) / (100000000 / 8)", self.start_time, self.end_time, self.step)
+        self.download_utilization_query = self.base_query.format("100 * rate(node_network_receive_bytes_total{device=~'" + network_names + "'}[1m]) / (100000000 / 8)", self.start_time, self.end_time, self.step)
+        self.upload_saturation_query = self.base_query
+        self.download_saturation_query = self.base_query
+        self.error_query = self.base_query
+
+    def get_utilization(self):
+        upload = super().get_utilization(self.upload_utilization_query)
+        download = super().get_utilization(self.download_utilization_query)
+        return [upload, download]
 
     def get_saturation(self):
         pass
