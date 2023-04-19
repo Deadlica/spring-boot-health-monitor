@@ -15,42 +15,42 @@ import java.util.Random;
 @RestController
 public class LoadController {
     @GetMapping("/load/cpu")
-    public String loadCPU() {
+    public ResponseEntity<String> loadCPU() {
         for(int i = 0; i < CPU.cores(); i++) {
             Thread thread = new Thread(CPU::load);
             thread.start();
         }
-        return "Loaded the CPU successfully!";
+        return ResponseEntity.ok("Loaded the CPU successfully!");
     }
 
     @GetMapping("/load/ram")
-    public String loadRAM() {
-        return RAM.load();
+    public ResponseEntity<String> loadRAM() {
+        Thread t = new Thread(RAM::load2);
+        t.start();
+        return ResponseEntity.ok("Loading the RAM!");
     }
 
     @GetMapping("/load/disk")
-    public String loadDisk() {
+    public ResponseEntity<String> loadDisk() {
         Thread t = new Thread(Disk::load);
         t.start();
-        return "Loaded the disk successfully!";
+        return ResponseEntity.ok("Loading the disk!");
     }
 
     @GetMapping("load/network")
     public ResponseEntity<String> loadNetwork() {
-        for(int i = 0; i < CPU.cores(); i++) {
-            Thread t = new Thread(Network::load);
-            t.start();
-        }
+        Thread t = new Thread(Network::load);
+        t.start();
         return ResponseEntity.ok("Loading the network!");
     }
 
     @GetMapping("load/all")
-    public String loadAll() {
+    public ResponseEntity<String> loadAll() {
         loadCPU();
+        loadRAM();
         loadDisk();
         loadNetwork();
-        loadRAM();
-        return "Loaded all hardware successfully";
+        return ResponseEntity.ok("Loading all hardware!");
     }
 
     @GetMapping("web-shop")

@@ -2,13 +2,16 @@ import requests
 from datetime import datetime, timedelta
 import statistics
 import time
+import urllib.parse
 
 
 class Resource:
+    time_range = 5
     def __init__(self, name):
         self.name = name
+        self.threshold = 80
         self.end_time = datetime.utcnow()
-        self.start_time = (self.end_time - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.start_time = (self.end_time - timedelta(minutes=Resource.time_range)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.end_time = self.end_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.step = "10s"
         self.url = "http://localhost:9090/api/v1/"
@@ -20,13 +23,13 @@ class Resource:
     def get_saturation(self, query):
         return self.compute_average(self.url, query)
 
-    def get_errors(self):
-        print("errors")
+    def get_errors(self, query):
+        return self.compute_average(self.url, query)
 
     def compute_average(self, url, query):
         response = requests.get(url + query).json()
         if(response["status"] == "success"):
-            data_pairs = response["data"]["result"][0]["values"] #Will crash on CPU if spring boot application isn't running
+            data_pairs = response["data"]["result"][0]["values"] #Will crash on if spring boot application isn't running
             data = list()
             sum = 0.0
             for value in (data_pairs):
@@ -66,7 +69,7 @@ class CPU(Resource):
             
 
     def get_errors(self):
-        pass
+        return 0
 
     def __avg_rql(self, values): #Returns the average run queue length over intervals
         rq_measurements = list()
@@ -92,12 +95,13 @@ class RAM(Resource):
         return super().get_saturation(self.saturation_query)
 
     def get_errors(self):
-        pass
+        return 0
 
 
 class Disk(Resource):
     def __init__(self, name, disk_names):
         super().__init__(name)
+        self.threshold = 60
         self.utilization_query = self.base_query.format("irate(node_disk_io_time_seconds_total{instance='localhost:9100',job='node',device=~'" + disk_names + "'} [1m0s])", self.start_time, self.end_time, self.step)
         self.saturation_query = self.base_query.format("node_disk_io_now{device=~'" + disk_names + "', instance='localhost:9100', job='node'}", self.start_time, self.end_time, self.step)
         self.error_query = self.base_query
@@ -109,17 +113,16 @@ class Disk(Resource):
         return super().get_saturation(self.saturation_query)
 
     def get_errors(self):
-        pass
+        return 0
 
     
 class Network(Resource):
-    def __init__(self, name, network_names):
+    def __init__(self, name, network_names, bandwidth):
         super().__init__(name)
-        self.upload_utilization_query = self.base_query.format("100 * rate(node_network_transmit_bytes_total{device=~'" + network_names + "'}[1m]) / (100000000 / 8)", self.start_time, self.end_time, self.step)
-        self.download_utilization_query = self.base_query.format("100 * rate(node_network_receive_bytes_total{device=~'" + network_names + "'}[1m]) / (100000000 / 8)", self.start_time, self.end_time, self.step)
-        self.upload_saturation_query = self.base_query
-        self.download_saturation_query = self.base_query
-        self.error_query = self.base_query
+        self.upload_utilization_query = self.base_query.format("100 * rate(node_network_transmit_bytes_total{device=~'" + network_names + "'}[1m]) / " + str(bandwidth["upload"]), self.start_time, self.end_time, self.step)
+        self.download_utilization_query = self.base_query.format("100 * rate(node_network_receive_bytes_total{device=~'" + network_names + "'}[1m]) / " + str(bandwidth["download"]), self.start_time, self.end_time, self.step)
+        self.saturation_query = self.base_query.format("sum%28rate%28node_network_receive_drop_total%7Bdevice%3D~%27" + network_names + "%27%7D%5B1m%5D%29+%2B+rate%28node_network_transmit_drop_total%7Bdevice%3D~%27" + network_names + "%27%7D%5B1m%5D%29%29", self.start_time, self.end_time, self.step)
+        self.error_query = self.base_query.format("sum%28rate%28node_network_receive_errs_total%7Bdevice%3D~%27" + network_names + "%27%7D%5B1m%5D%29+%2B+rate%28node_network_transmit_errs_total%7Bdevice%3D~%27" + network_names + "%27%7D%5B1m%5D%29%29", self.start_time, self.end_time, self.step)
 
     def get_utilization(self):
         upload = super().get_utilization(self.upload_utilization_query)
@@ -127,7 +130,7 @@ class Network(Resource):
         return [upload, download]
 
     def get_saturation(self):
-        pass
+        return super().get_saturation(self.saturation_query)
 
     def get_errors(self):
-        pass
+        return super().get_errors(self.error_query)

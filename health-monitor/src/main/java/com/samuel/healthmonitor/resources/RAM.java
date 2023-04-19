@@ -1,6 +1,9 @@
 package com.samuel.healthmonitor.resources;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +42,21 @@ public class RAM {
                         freeMemory / MiB,
                         totalMemory / MiB,
                         maxMemory / MiB);
+    }
+
+    public static void load2() {
+        while(true) {
+            String[] command = {"stress-ng", "--vm", "2", "--vm-bytes", "2G", "--vm-method", "all", "--vm-hang", "60s", "-t", "120s"};
+            try {
+                ProcessBuilder pb = new ProcessBuilder(command);
+                //pb.redirectErrorStream(true);
+                //pb.directory(new File(System.getProperty("user.home")));
+                Process stress_ng = pb.start();
+                stress_ng.waitFor();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static List<byte[]> memoryList = new ArrayList<>();
