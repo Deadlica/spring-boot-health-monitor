@@ -1,4 +1,4 @@
-from Resource import CPU, RAM, Disk, Network, Resource
+from resource import CPU, RAM, Disk, Network, Resource
 import urllib.parse
 import sys
 
