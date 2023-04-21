@@ -1,38 +1,8 @@
 package com.samuel.healthmonitor.resources;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Random;
 
 public class Disk {
-    public static void readLoad() throws IOException {
-        while(true) {
-            FileReader file = new FileReader(fileName);
-            for(int i = 0; i < 1000000; i++) {
-                String line = new String();
-                file.read(line.toCharArray());
-            }
-            file.close();
-        }
-    }
-
-    public static void writeLoad() throws IOException {
-        while(true) {
-            FileWriter file = new FileWriter(fileName);
-            for(int i = 0; i < 1000000; i++) {
-                file.write("Dummy text.\n");
-            }
-            file.close();
-        }
-    }
-
-    private static String fileName = "load_test.txt";
-
     public static void load() {
         while(true) {
             String[] command = {"/bin/bash", "-c", "sudo bonnie++ -d bonnie/ -s 8192 -n 1000 -r 1000 -u root"};
@@ -53,5 +23,4 @@ public class Disk {
             }
         }
     }
-
 }

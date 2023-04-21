@@ -5,13 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Random;
-
 @RestController
 public class LoadController {
     @GetMapping("/load/cpu")
@@ -25,7 +18,7 @@ public class LoadController {
 
     @GetMapping("/load/ram")
     public ResponseEntity<String> loadRAM() {
-        Thread t = new Thread(RAM::load2);
+        Thread t = new Thread(RAM::load);
         t.start();
         return ResponseEntity.ok("Loading the RAM!");
     }

@@ -29,13 +29,13 @@ class Resource:
     def compute_average(self, url, query):
         response = requests.get(url + query).json()
         if(response["status"] == "success"):
-            data_pairs = response["data"]["result"][0]["values"] #Will crash on if spring boot application isn't running
+            data_pairs = response["data"]["result"][0]["values"]
             data = list()
             sum = 0.0
             for value in (data_pairs):
                 sum += (float(value[1]))
 
-            return sum / len(data_pairs) #Average Utilization % over 5min
+            return sum / len(data_pairs) #Average Utilization
 
         return self.report_http_error(response)
 

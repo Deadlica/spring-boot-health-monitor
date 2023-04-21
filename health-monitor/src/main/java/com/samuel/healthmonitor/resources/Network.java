@@ -1,10 +1,6 @@
 package com.samuel.healthmonitor.resources;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
-import java.net.http.HttpHeaders;
 
 public class Network {
     public static void load() {
@@ -22,7 +18,4 @@ public class Network {
             }
         }
     }
-
-    private static final RestTemplate request = new RestTemplate();
-    private static final String url = "https://jsonplaceholder.typicode.com/posts";
 }
